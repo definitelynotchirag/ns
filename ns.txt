@@ -1,0 +1,152 @@
+# Exp-1 Password Security Process
+# Part 1:
+
+
+def password_checker():
+	password = input("Enter your password: ")
+	og_password = ""
+	with open("file.txt", "r") as file:
+		og_password = file.readline()
+	# file.close() - not needed with 'with' statement
+	if og_password==password:
+		print("Correct Password")
+	else:
+		print("Incorrect Password")
+
+password_checker()
+
+
+
+# Part 2:
+# import maskpass  # Uncomment if maskpass is installed
+def password_checker_masked():
+	# password = maskpass.askpass(mask="*")  # Uncomment if maskpass is installed
+	password = input("Enter your password: ")  # Use this if maskpass is not available
+	og_password = ""
+	with open("file.txt", "r") as file:
+		og_password = file.readline()
+	# file.close() - not needed with 'with' statement
+	if og_password==password:
+		print("Correct Password")
+	else:
+		print("Incorrect Password")
+# Exp-2 Encryption and Decryption for Transposition Cipher
+# Code:
+# Columnar Transposition
+import math
+
+# Encryption
+def encryptMessage(msg, key):
+	cipher = ""
+	# track key indices
+	k_indx = 0
+	msg_len = float(len(msg))
+	msg_lst = list(msg)
+	key_lst = sorted(list(key))
+	# calculate column of the matrix
+	col = len(key)
+	# calculate maximum row of the matrix
+	row = int(math.ceil(msg_len / col))
+	# add the padding character '_' in empty
+	# the empty cell of the matix
+	fill_null = int((row * col) - msg_len)
+	msg_lst.extend('_' * fill_null)
+	# create Matrix and insert message and
+	# padding characters row-wise
+	matrix = [msg_lst[i: i + col]
+			 for i in range(0, len(msg_lst), col)]
+	# read matrix column-wise using key
+	for _ in range(col):
+		curr_idx = key.index(key_lst[k_indx])
+		cipher += ''.join([row[curr_idx]
+						  for row in matrix])
+		k_indx += 1
+	return cipher
+
+# Decryption
+def decryptMessage(cipher, key):
+	msg = ""
+	# track key indices
+	k_indx = 0
+	# track msg indices
+	msg_indx = 0
+	msg_len = float(len(cipher))
+	msg_lst = list(cipher)
+	# calculate column of the matrix
+	col = len(key)
+	# calculate maximum row of the matrix
+	row = int(math.ceil(msg_len / col))
+	# convert key into list and sort
+	# alphabetically so we can access
+	# each character by its alphabetical position.
+	key_lst = sorted(list(key))
+	# create an empty matrix to
+	# store deciphered message
+	dec_cipher = []
+	for _ in range(row):
+		dec_cipher += [[None] * col]
+	# Arrange the matrix column wise according
+	# to permutation order by adding into new matrix
+	for _ in range(col):
+		curr_idx = key.index(key_lst[k_indx])
+		for j in range(row):
+			dec_cipher[j][curr_idx] = msg_lst[msg_indx]
+			msg_indx += 1
+		k_indx += 1
+	# convert decrypted msg matrix into a string
+	try:
+		msg = ''.join(sum(dec_cipher, []))
+	except TypeError:
+		raise TypeError("This program cannot",
+					   "handle repeating words.")
+	null_count = msg.count('_')
+	if null_count > 0:
+		return msg[: -null_count]
+	return msg
+
+def transposition_cipher_example():
+	key = input("Enter Your key: ")
+	msg = input("Enter your message: ")
+	cipher = encryptMessage(msg, key)
+	print("Encrypted Message: {}".format(cipher))
+	print("Decryped Message: {}".format(decryptMessage(cipher, key)))
+
+# Exp-3 Encryption and Decryption for Substitution Cipher
+# Code:
+def substitution_cipher_example():
+	letters = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9,
+			  'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18,
+			  't': 19, 'u': 20, 'v': 21, 'w': 22, 'x': 23, 'y': 24, 'z': 25}
+	reversed_letters = {v: k for k, v in letters.items()}
+	key = int(input("Input your key: "))
+	plain_text = input("Enter plain text: ").lower()
+	
+	with open("file.txt", 'w+') as file:
+		file.write(plain_text)
+	
+	cipher_Text = ""
+	n = len(plain_text)
+	for i in range(n):
+		if plain_text[i] in letters:
+			m = letters[plain_text[i]]
+			c = (key+m)%26
+			cipher_Text+=reversed_letters[c]
+		else:
+			cipher_Text+=plain_text[i]
+			
+	with open("encrypted_pass.txt", "w+") as file:
+		file.write(cipher_Text)
+	
+	ogtext = ""
+	for j in range(n):
+		if cipher_Text[j] in letters:
+			c = letters[cipher_Text[j]]
+			m = (c-key)%26
+			ogtext+=reversed_letters[m]
+		else:
+			ogtext+=cipher_Text[j]
+			
+	print("Cipher Text: ", cipher_Text)
+	print("Decrypted Text: ", ogtext)
+
+substitution_cipher_example()
